@@ -1,11 +1,14 @@
 
+import 'dart:io';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 const supabaseUrl = 'https://tlttresnklfdgaanjgwv.supabase.co';
-const supabaseKey = 'sb_publishable_54016q32muUvn9WcmfDkNw_XAqFxaMg';
+const supabaseKey =
+    'sb_publishable_54016q32muUvn9WcmfDkNw_XAqFxaMg';
 
 const blue = Color(0xFF1457D9);
 const darkBlue = Color(0xFF102B55);
@@ -15,16 +18,26 @@ final supabase = Supabase.instance.client;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
+
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseKey,
+  );
+
   runApp(const VendozaApp());
 }
 
 String makeUuid() {
   final r = Random.secure();
   final bytes = List<int>.generate(16, (_) => r.nextInt(256));
+
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  final h = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+
+  final h = bytes
+      .map((b) => b.toRadixString(16).padLeft(2, '0'))
+      .join();
+
   return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-${h.substring(16, 20)}-${h.substring(20)}';
 }
 
@@ -98,12 +111,14 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final email = TextEditingController();
   final password = TextEditingController();
+
   bool register = false;
   bool loading = false;
   String accountType = 'buyer';
 
   void message(String text) {
     if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(text)),
     );
@@ -119,6 +134,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     setState(() => loading = true);
+
     try {
       if (register) {
         final result = await supabase.auth.signUp(
@@ -129,13 +145,23 @@ class _LoginPageState extends State<LoginPage> {
 
         if (result.user != null && result.session != null) {
           await ensureProfile();
-          if (accountType == 'seller') await becomeSeller();
+
+          if (accountType == 'seller') {
+            await becomeSeller();
+          }
+
           message('Cont creat cu succes!');
         } else {
-          message('Cont creat! Confirmă adresa de email, apoi conectează-te.');
+          message(
+            'Cont creat! Confirmă adresa de email, apoi conectează-te.',
+          );
         }
       } else {
-        await supabase.auth.signInWithPassword(email: e, password: p);
+        await supabase.auth.signInWithPassword(
+          email: e,
+          password: p,
+        );
+
         await ensureProfile();
         message('Conectare reușită!');
       }
@@ -164,17 +190,33 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const Icon(Icons.shopping_bag_rounded, color: blue, size: 65),
+                const Icon(
+                  Icons.shopping_bag_rounded,
+                  color: blue,
+                  size: 65,
+                ),
                 const SizedBox(height: 12),
-                const Text('VENDOZA',
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold,
-                        color: darkBlue, letterSpacing: 2)),
-                const Text('Buy. Sell. Discover.',
-                    style: TextStyle(color: Colors.grey)),
+                const Text(
+                  'VENDOZA',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: darkBlue,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const Text(
+                  'Buy. Sell. Discover.',
+                  style: TextStyle(color: Colors.grey),
+                ),
                 const SizedBox(height: 30),
-                Text(register ? 'Creează un cont' : 'Bine ai revenit!',
-                    style: const TextStyle(fontSize: 24,
-                        fontWeight: FontWeight.bold)),
+                Text(
+                  register ? 'Creează un cont' : 'Bine ai revenit!',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: email,
@@ -201,12 +243,19 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 8),
                   SegmentedButton<String>(
                     segments: const [
-                      ButtonSegment(value: 'buyer', label: Text('Cumpărător')),
-                      ButtonSegment(value: 'seller', label: Text('Vânzător')),
+                      ButtonSegment(
+                        value: 'buyer',
+                        label: Text('Cumpărător'),
+                      ),
+                      ButtonSegment(
+                        value: 'seller',
+                        label: Text('Vânzător'),
+                      ),
                     ],
                     selected: {accountType},
-                    onSelectionChanged: (v) =>
-                        setState(() => accountType = v.first),
+                    onSelectionChanged: (v) {
+                      setState(() => accountType = v.first);
+                    },
                   ),
                 ],
                 const SizedBox(height: 22),
@@ -216,15 +265,23 @@ class _LoginPageState extends State<LoginPage> {
                   child: FilledButton(
                     onPressed: loading ? null : submit,
                     child: loading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(register ? 'Înregistrare' : 'Conectare'),
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Text(
+                            register ? 'Înregistrare' : 'Conectare',
+                          ),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => setState(() => register = !register),
-                  child: Text(register
-                      ? 'Ai deja cont? Conectează-te'
-                      : 'Nu ai cont? Înregistrează-te'),
+                  onPressed: () {
+                    setState(() => register = !register);
+                  },
+                  child: Text(
+                    register
+                        ? 'Ai deja cont? Conectează-te'
+                        : 'Nu ai cont? Înregistrează-te',
+                  ),
                 ),
               ],
             ),
@@ -245,12 +302,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool isAdmin = false;
   bool checking = true;
+
   String category = 'Toate';
   final search = TextEditingController();
 
   final categories = [
-    'Toate', 'Electronice', 'Moda', 'Casa si gradina',
-    'Sport', 'Jucarii', 'Auto'
+    'Toate',
+    'Electronice',
+    'Moda',
+    'Casa si gradina',
+    'Sport',
+    'Jucarii',
+    'Auto',
   ];
 
   @override
@@ -261,17 +324,19 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> checkAdmin() async {
     try {
-      final uid = supabase.auth.currentUser!.id;
-      final result = await supabase
-          .from('admin_users')
-          .select('user_id')
-          .eq('user_id', uid)
-          .maybeSingle();
-      isAdmin = result != null;
-    } catch (_) {
+      final result = await supabase.rpc('is_vendoza_admin');
+
+      isAdmin = result == true;
+
+      debugPrint('VENDOZA admin status: $isAdmin');
+    } catch (e) {
+      debugPrint('Eroare verificare administrator: $e');
       isAdmin = false;
     }
-    if (mounted) setState(() => checking = false);
+
+    if (mounted) {
+      setState(() => checking = false);
+    }
   }
 
   Future<void> logout() async {
@@ -290,37 +355,59 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('VENDOZA',
-            style: TextStyle(fontWeight: FontWeight.bold,
-                color: darkBlue, letterSpacing: 1.5)),
+        title: const Text(
+          'VENDOZA',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: darkBlue,
+            letterSpacing: 1.5,
+          ),
+        ),
         actions: [
+          if (checking)
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
           if (isAdmin)
             IconButton(
               tooltip: 'Administrare',
               icon: const Icon(Icons.admin_panel_settings),
-              onPressed: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AdminPage())),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AdminPage(),
+                  ),
+                );
+              },
             ),
           IconButton(
             tooltip: 'Profil',
             icon: const Icon(Icons.account_circle_outlined),
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              builder: (_) => Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(email),
-                    const SizedBox(height: 15),
-                    OutlinedButton(
-                      onPressed: logout,
-                      child: const Text('Deconectare'),
-                    ),
-                  ],
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (_) => Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(email),
+                      const SizedBox(height: 15),
+                      OutlinedButton(
+                        onPressed: logout,
+                        child: const Text('Deconectare'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -330,21 +417,32 @@ class _HomePageState extends State<HomePage> {
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [blue, darkBlue]),
+              gradient: const LinearGradient(
+                colors: [blue, darkBlue],
+              ),
               borderRadius: BorderRadius.circular(22),
             ),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Bine ai venit pe VENDOZA!',
-                    style: TextStyle(color: Colors.white,
-                        fontSize: 23, fontWeight: FontWeight.bold)),
+                Text(
+                  'Bine ai venit pe VENDOZA!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 23,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 SizedBox(height: 8),
-                Text('Cumpără, vinde și descoperă produse.',
-                    style: TextStyle(color: Colors.white)),
+                Text(
+                  'Cumpără, vinde și descoperă produse.',
+                  style: TextStyle(color: Colors.white),
+                ),
                 SizedBox(height: 10),
-                Text('Buy. Sell. Discover.',
-                    style: TextStyle(color: Colors.white70)),
+                Text(
+                  'Buy. Sell. Discover.',
+                  style: TextStyle(color: Colors.white70),
+                ),
               ],
             ),
           ),
@@ -361,32 +459,55 @@ class _HomePageState extends State<HomePage> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 20),
-          const Text('Categorii',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text(
+            'Categorii',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
-            children: categories.map((c) => ChoiceChip(
-              label: Text(c),
-              selected: category == c,
-              onSelected: (_) => setState(() => category = c),
-            )).toList(),
+            children: categories.map((c) {
+              return ChoiceChip(
+                label: Text(c),
+                selected: category == c,
+                onSelected: (_) {
+                  setState(() => category = c);
+                },
+              );
+            }).toList(),
           ),
           const SizedBox(height: 20),
           SizedBox(
             height: 52,
             child: FilledButton.icon(
-              onPressed: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const SellPage())),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SellPage(),
+                  ),
+                );
+              },
               icon: const Icon(Icons.add),
               label: const Text('Vinde pe VENDOZA'),
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Produse disponibile',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text(
+            'Produse disponibile',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 12),
-          ProductList(search: search.text, category: category),
+          ProductList(
+            search: search.text,
+            category: category,
+          ),
           const SizedBox(height: 25),
           const Center(child: Text('VENDOZA © 2026')),
         ],
@@ -399,28 +520,42 @@ class ProductList extends StatelessWidget {
   final String search;
   final String category;
 
-  const ProductList({super.key, required this.search, required this.category});
+  const ProductList({
+    super.key,
+    required this.search,
+    required this.category,
+  });
 
   @override
   Widget build(BuildContext context) {
-    var query = supabase.from('products').select(
-        'id,name,description,price,currency,image_url,category_id,country');
+    final query = supabase.from('products').select(
+      'id,name,description,price,currency,image_url,category_id,country',
+    );
 
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: query.eq('status', 'approved').order('created_at', ascending: false),
+      future: query
+          .eq('status', 'approved')
+          .order('created_at', ascending: false),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
+
         if (snapshot.hasError) {
           return const Text('Nu am putut încărca produsele.');
         }
 
         final items = (snapshot.data ?? []).where((p) {
           final name = (p['name'] ?? '').toString().toLowerCase();
-          final matchesSearch = name.contains(search.toLowerCase());
+
+          final matchesSearch =
+              name.contains(search.toLowerCase());
+
           final matchesCategory = category == 'Toate' ||
-              (p['category_id'] == categoriesId(category));
+              p['category_id'] == categoriesId(category);
+
           return matchesSearch && matchesCategory;
         }).toList();
 
@@ -428,27 +563,40 @@ class ProductList extends StatelessWidget {
           return const Card(
             child: Padding(
               padding: EdgeInsets.all(24),
-              child: Text('Momentan nu există produse publicate.',
-                  textAlign: TextAlign.center),
+              child: Text(
+                'Momentan nu există produse publicate.',
+                textAlign: TextAlign.center,
+              ),
             ),
           );
         }
 
         return Column(
-          children: items.map((p) => Card(
-            clipBehavior: Clip.antiAlias,
-            child: ListTile(
-              leading: p['image_url'] == null
-                  ? const Icon(Icons.shopping_bag, size: 42)
-                  : Image.network(p['image_url'],
-                      width: 65, height: 65, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.image_not_supported)),
-              title: Text(p['name'] ?? ''),
-              subtitle: Text('${p['price']} lei\n${p['description'] ?? ''}'),
-              isThreeLine: true,
-            ),
-          )).toList(),
+          children: items.map((p) {
+            return Card(
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                leading: p['image_url'] == null
+                    ? const Icon(Icons.shopping_bag, size: 42)
+                    : Image.network(
+                        p['image_url'],
+                        width: 65,
+                        height: 65,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) {
+                          return const Icon(
+                            Icons.image_not_supported,
+                          );
+                        },
+                      ),
+                title: Text(p['name'] ?? ''),
+                subtitle: Text(
+                  '${p['price']} lei\n${p['description'] ?? ''}',
+                ),
+                isThreeLine: true,
+              ),
+            );
+          }).toList(),
         );
       },
     );
@@ -463,6 +611,7 @@ class ProductList extends StatelessWidget {
       'Jucarii': 5,
       'Auto': 6,
     };
+
     return ids[name];
   }
 }
@@ -479,6 +628,7 @@ class _SellPageState extends State<SellPage> {
   final description = TextEditingController();
   final price = TextEditingController();
   final country = TextEditingController(text: 'Romania');
+
   final picker = ImagePicker();
 
   int categoryId = 1;
@@ -507,7 +657,10 @@ class _SellPageState extends State<SellPage> {
         imageQuality: 80,
         maxWidth: 1600,
       );
-      if (selected != null) setState(() => image = selected);
+
+      if (selected != null) {
+        setState(() => image = selected);
+      }
     } catch (e) {
       message('Nu am putut deschide galeria: $e');
     }
@@ -515,29 +668,39 @@ class _SellPageState extends State<SellPage> {
 
   Future<void> submitProduct() async {
     final user = supabase.auth.currentUser;
-    final parsedPrice = double.tryParse(price.text.trim().replaceAll(',', '.'));
+
+    final parsedPrice = double.tryParse(
+      price.text.trim().replaceAll(',', '.'),
+    );
 
     if (user == null) {
       message('Trebuie să fii conectat.');
       return;
     }
-    if (name.text.trim().isEmpty || parsedPrice == null || parsedPrice <= 0) {
+
+    if (name.text.trim().isEmpty ||
+        parsedPrice == null ||
+        parsedPrice <= 0) {
       message('Completează numele și un preț valid în lei.');
       return;
     }
+
     if (image == null) {
       message('Alege o fotografie pentru produs.');
       return;
     }
 
     setState(() => loading = true);
+
     try {
       await becomeSeller();
 
       final productId = makeUuid();
+
       final extension = image!.name.contains('.')
           ? image!.name.split('.').last.toLowerCase()
           : 'jpg';
+
       final path = '${user.id}/$productId.$extension';
 
       final bytes = await image!.readAsBytes();
@@ -551,7 +714,8 @@ class _SellPageState extends State<SellPage> {
         ),
       );
 
-      final imageUrl = supabase.storage.from(bucketName).getPublicUrl(path);
+      final imageUrl =
+          supabase.storage.from(bucketName).getPublicUrl(path);
 
       await supabase.from('products').insert({
         'id': productId,
@@ -568,12 +732,15 @@ class _SellPageState extends State<SellPage> {
       });
 
       if (!mounted) return;
+
       message('Produs trimis! Așteaptă aprobarea administratorului.');
       Navigator.pop(context);
     } catch (e) {
       message('Eroare la publicarea produsului: $e');
     } finally {
-      if (mounted) setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 
@@ -589,12 +756,16 @@ class _SellPageState extends State<SellPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Adaugă produs')),
+      appBar: AppBar(
+        title: const Text('Adaugă produs'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Fotografia produsului',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            'Fotografia produsului',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
           InkWell(
             onTap: chooseImage,
@@ -609,15 +780,26 @@ class _SellPageState extends State<SellPage> {
                   ? const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_photo_alternate, size: 55, color: blue),
+                        Icon(
+                          Icons.add_photo_alternate,
+                          size: 55,
+                          color: blue,
+                        ),
                         SizedBox(height: 8),
                         Text('Alege din galeria telefonului'),
                       ],
                     )
-                  : Image.network(
-                      image!.path,
-                      errorBuilder: (_, __, ___) => const Center(
-                        child: Icon(Icons.image, size: 60),
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.file(
+                        File(image!.path),
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) {
+                          return const Center(
+                            child: Icon(Icons.image, size: 60),
+                          );
+                        },
                       ),
                     ),
             ),
@@ -637,11 +819,16 @@ class _SellPageState extends State<SellPage> {
               labelText: 'Categoria',
               border: OutlineInputBorder(),
             ),
-            items: categoryOptions.entries.map((e) =>
-              DropdownMenuItem(value: e.key, child: Text(e.value))
-            ).toList(),
+            items: categoryOptions.entries.map((e) {
+              return DropdownMenuItem(
+                value: e.key,
+                child: Text(e.value),
+              );
+            }).toList(),
             onChanged: (v) {
-              if (v != null) setState(() => categoryId = v);
+              if (v != null) {
+                setState(() => categoryId = v);
+              }
             },
           ),
           const SizedBox(height: 14),
@@ -656,7 +843,9 @@ class _SellPageState extends State<SellPage> {
           const SizedBox(height: 14),
           TextField(
             controller: price,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
             decoration: const InputDecoration(
               labelText: 'Preț în lei (RON)',
               suffixText: 'lei',
@@ -677,7 +866,9 @@ class _SellPageState extends State<SellPage> {
             child: FilledButton(
               onPressed: loading ? null : submitProduct,
               child: loading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
                   : const Text('Trimite spre aprobare'),
             ),
           ),
@@ -703,7 +894,9 @@ class _AdminPageState extends State<AdminPage> {
   Future<List<Map<String, dynamic>>> loadPending() async {
     return await supabase
         .from('products')
-        .select('id,name,description,price,currency,image_url,country,seller_id')
+        .select(
+          'id,name,description,price,currency,image_url,country,seller_id',
+        )
         .eq('status', 'pending')
         .order('created_at');
   }
@@ -713,16 +906,22 @@ class _AdminPageState extends State<AdminPage> {
       await supabase.from('products').update({
         'status': 'approved',
       }).eq('id', id);
+
       setState(() {});
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Produs aprobat și publicat!')),
+          const SnackBar(
+            content: Text('Produs aprobat și publicat!'),
+          ),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Eroare: $e')),
+        );
+      }
     }
   }
 
@@ -731,32 +930,45 @@ class _AdminPageState extends State<AdminPage> {
       await supabase.from('products').update({
         'status': 'rejected',
       }).eq('id', id);
+
       setState(() {});
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Eroare: $e')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Administrare VENDOZA')),
+      appBar: AppBar(
+        title: const Text('Administrare VENDOZA'),
+      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: loadPending(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
+
           if (snapshot.hasError) {
-            return Center(child: Text('Eroare: ${snapshot.error}'));
+            return Center(
+              child: Text('Eroare: ${snapshot.error}'),
+            );
           }
 
           final products = snapshot.data ?? [];
+
           if (products.isEmpty) {
             return const Center(
-              child: Text('Nu există produse în așteptarea aprobării.'),
+              child: Text(
+                'Nu există produse în așteptarea aprobării.',
+              ),
             );
           }
 
@@ -765,6 +977,7 @@ class _AdminPageState extends State<AdminPage> {
             itemCount: products.length,
             itemBuilder: (context, index) {
               final p = products[index];
+
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
@@ -772,13 +985,26 @@ class _AdminPageState extends State<AdminPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (p['image_url'] != null)
-                        Image.network(p['image_url'],
-                            height: 180, width: double.infinity,
-                            fit: BoxFit.cover),
+                        Image.network(
+                          p['image_url'],
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) {
+                            return const Icon(
+                              Icons.image_not_supported,
+                              size: 60,
+                            );
+                          },
+                        ),
                       const SizedBox(height: 10),
-                      Text(p['name'] ?? '',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(
+                        p['name'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       Text('${p['price']} lei'),
                       Text(p['description'] ?? ''),
                       Text('Țara: ${p['country'] ?? ''}'),
